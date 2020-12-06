@@ -6,14 +6,18 @@ import argparse
 from model import SASRec
 from tqdm import tqdm
 from utils import *
-
+from preprocess import create_process_file
 def str2bool(s):
     if s not in {'false', 'true'}:
         raise ValueError('Not a valid boolean string')
     return s == 'true'
 
+def _get_preprocessed_dataset_path(dataset):
+    return os.path.exists(f"data/{dataset}.txt")
+        
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', required=True)
+parser.add_argument('--dataset', required=True, choices=['ml-1m', 'meli'])
 parser.add_argument('--train_dir', required=True)
 parser.add_argument('--batch_size', default=128, type=int)
 parser.add_argument('--lr', default=0.001, type=float)
@@ -29,11 +33,24 @@ parser.add_argument('--inference_only', default=False, type=str2bool)
 parser.add_argument('--state_dict_path', default=None, type=str)
 
 args = parser.parse_args()
+
+print("Started process with this args")
+print(args)
+
+print("Checking for necesary data")
+if not _get_preprocessed_dataset_path(args.dataset):
+    print("Processed data not found, starting processing")
+    create_process_file(src_path='../data/', dst_path='data/')
+print("Preprocessed data founded!")
+
 if not os.path.isdir(args.dataset + '_' + args.train_dir):
     os.makedirs(args.dataset + '_' + args.train_dir)
+
 with open(os.path.join(args.dataset + '_' + args.train_dir, 'args.txt'), 'w') as f:
     f.write('\n'.join([str(k) + ',' + str(v) for k, v in sorted(vars(args).items(), key=lambda x: x[0])]))
 f.close()
+
+print("...Experiment folder created")
 
 dataset = data_partition(args.dataset)
 [user_train, user_valid, user_test, usernum, itemnum] = dataset
@@ -49,6 +66,7 @@ sampler = WarpSampler(user_train, usernum, itemnum, batch_size=args.batch_size, 
 model = SASRec(usernum, itemnum, args).to(args.device) # no ReLU activation in original SASRec implementation?
 
 for name, param in model.named_parameters():
+    print(name, param)
     try:
         torch.nn.init.xavier_uniform_(param.data)
     except:

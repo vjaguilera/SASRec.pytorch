@@ -16,7 +16,6 @@ def random_neq(l, r, s):
 
 def sample_function(user_train, usernum, itemnum, batch_size, maxlen, result_queue, SEED):
     def sample():
-
         user = np.random.randint(1, usernum + 1)
         while len(user_train[user]) <= 1: user = np.random.randint(1, usernum + 1)
 
@@ -98,10 +97,8 @@ def data_partition(fname):
             user_test[user] = []
         else:
             user_train[user] = User[user][:-2]
-            user_valid[user] = []
-            user_valid[user].append(User[user][-2])
-            user_test[user] = []
-            user_test[user].append(User[user][-1])
+            user_valid[user] = [User[user][-2]]
+            user_test[user] = [User[user][-1]]
     return [user_train, user_valid, user_test, usernum, itemnum]
 
 # TODO: merge evaluate functions for test and val set
