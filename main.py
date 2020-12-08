@@ -136,7 +136,7 @@ for epoch in range(epoch_start_idx, args.num_epochs + 1):
         t0 = time.time()
         model.train()
     
-    print("loss in epoch {}: {}".format(epoch, loss_epoch) # expected 0.4~0.6 after init few epochs
+    print("loss in epoch {}: {}".format(epoch, loss_epoch)) # expected 0.4~0.6 after init few epochs
 
     if epoch == args.num_epochs:
         folder = args.dataset + '_' + args.train_dir
