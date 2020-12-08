@@ -104,6 +104,7 @@ T = 0.0
 t0 = time.time()
 
 for epoch in range(epoch_start_idx, args.num_epochs + 1):
+    loss_epoch = 0
     if args.inference_only: break # just to decrease identition
     for step in range(num_batch): # tqdm(range(num_batch), total=num_batch, ncols=70, leave=False, unit='b'):
         u, seq, pos, neg = sampler.next_batch() # tuples to ndarray
@@ -118,7 +119,7 @@ for epoch in range(epoch_start_idx, args.num_epochs + 1):
         for param in model.item_emb.parameters(): loss += args.l2_emb * torch.norm(param)
         loss.backward()
         adam_optimizer.step()
-        print("loss in epoch {} iteration {}: {}".format(epoch, step, loss.item())) # expected 0.4~0.6 after init few epochs
+        loss_epoch = loss.item()
 
     if epoch % 20 == 0:
         model.eval()
@@ -134,6 +135,8 @@ for epoch in range(epoch_start_idx, args.num_epochs + 1):
         f.flush()
         t0 = time.time()
         model.train()
+    
+    print("loss in epoch {}: {}".format(epoch, loss_epoch) # expected 0.4~0.6 after init few epochs
 
     if epoch == args.num_epochs:
         folder = args.dataset + '_' + args.train_dir
