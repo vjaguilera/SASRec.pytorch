@@ -54,10 +54,21 @@ print("...Experiment folder created")
 
 dataset = data_partition(args.dataset)
 [user_train, user_valid, user_test, usernum, itemnum] = dataset
+
+with open(os.path.join(args.dataset + '_' + args.train_dir, 'args.txt'), 'w') as f:
+    f.write('\n'.join([str(k) + ',' + str(v) for k, v in sorted(vars(args).items(), key=lambda x: x[0])]))
+f.close()
+
 num_batch = len(user_train) // args.batch_size # tail? + ((len(user_train) % args.batch_size) != 0)
 cc = 0.0
 for u in user_train:
     cc += len(user_train[u])
+
+print(f'usernum: {usernum} | itemnum: {itemnum}')
+with open(os.path.join(args.dataset + '_' + args.train_dir, 'useritemnum.txt'), 'w') as f:
+    f.write('usernum: ' + str(usernum)+ ' | itemnum: ' + str(itemnum))
+f.close()
+
 print('average sequence length: %.2f' % (cc / len(user_train)))
 
 f = open(os.path.join(args.dataset + '_' + args.train_dir, 'log.txt'), 'w')
@@ -131,6 +142,7 @@ for epoch in range(epoch_start_idx, args.num_epochs + 1):
         print('epoch:%d, time: %f(s), valid (NDCG@10: %.4f, HR@10: %.4f), test (NDCG@10: %.4f, HR@10: %.4f)'
                 % (epoch, T, t_valid[0], t_valid[1], t_test[0], t_test[1]))
 
+        f.write('VALIDATION NDCG@10, HR@10 | TEST NDCG@10, HR@10')
         f.write(str(t_valid) + ' ' + str(t_test) + '\n')
         f.flush()
         t0 = time.time()
